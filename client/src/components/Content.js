@@ -1,14 +1,22 @@
 import { Text, Grid, Spacer, Collapse, Input, Progress } from "@nextui-org/react"
 import axios from "axios";
 import { useEffect, useRef, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Box } from "./Box.js"
 import { TrackCard } from "./TrackCard.js";
 import { SearchButton } from "./SearchButton.js";
 import { Search } from "./SearchIcon.js";
+import { refreshAccessToken } from "../utils/refreshToken.js";
+import { setAccessToken } from "../state/index.js";
+
+const audio = new Audio();
+audio.preload = "metadata";
 
 export const Content = () => {
-	const token = useSelector((state) => state.accessToken);
+	const dispatch = useDispatch();
+
+	const accessToken = useSelector((state) => state.accessToken);
+	const refreshToken = useSelector((state) => state.refreshToken);
 	const allTracks = useSelector((state) => state.allTracks);
 	const tracks = useSelector((state) => state.tracks);
 	const recommendations = useSelector((state) => state.recommendations);
@@ -19,28 +27,50 @@ export const Content = () => {
 	const [searchResults, setSearchResults] = useState([]);
 	const [selectedTrack, setSelectedTrack] = useState(null);
 	const [similarity, setSimilarity] = useState(null);
+	const [playbackState, setPlaybackState] = useState({
+		playing: false,
+		duration: 0,
+		currentTime: 0,
+		src: ""
+	});
 
 	const getSimilarity = (controller) => {
-		if (!token) return;
+		if (!accessToken) return;
 		axios.post("http://localhost:3001/tracks/similarity",
-			{ selectedTrack: selectedTrack.id, token, allTracks },
+			{ selectedTrack: selectedTrack.id, token: accessToken, allTracks },
 			{ signal: controller.signal })
 			.then((response) => {
 				setSimilarity(response.data.results);
 			}).catch((error) => {
 				console.log(error);
+				refreshAccessToken(refreshToken).then((token) => {
+					dispatch(
+						setAccessToken({
+							token
+						})
+					);
+					getSimilarity(controller);
+				})
 			})
 	}
 
 	const searchTracks = (controller) => {
-		if (!token) return;
+		if (!accessToken) return;
 		axios.post("http://localhost:3001/tracks/search",
-			{ searchQuery: displayMessage, token },
+			{ searchQuery: displayMessage, token: accessToken },
 			{ signal: controller.signal })
 			.then((response) => {
-				setSearchResults(response.data.results);
+				setSearchResults(response.data.resultsUpdated);
 			}).catch((error) => {
 				console.log(error);
+				refreshAccessToken(refreshToken).then((token) => {
+					dispatch(
+						setAccessToken({
+							token
+						})
+					);
+					searchTracks(controller);
+				})
 			})
 	}
 
@@ -76,10 +106,61 @@ export const Content = () => {
 		setSelectedTrack(data.track);
 	};
 
+	useEffect(() => {
+		if (audio.paused || isNaN(audio.duration)) return;
+		const timeout = setTimeout(() => {
+			setPlaybackState({
+				playing: false,
+				duration: 0,
+				currentTime: 0,
+				src: ""
+			});
+		}, (audio.duration - audio.currentTime) * 1000);
+
+		const interval = setInterval(() => {
+			setPlaybackState(p => {
+				return { ...p, currentTime: audio.currentTime }
+			});
+		}, 1000);
+
+		return () => {
+			clearTimeout(timeout);
+			clearInterval(interval);
+		}
+	}, [playbackState])
+
+	audio.onloadedmetadata = () => {
+		setPlaybackState({
+			playing: !audio.paused,
+			duration: audio.duration,
+			currentTime: audio.currentTime,
+			src: audio.src
+		});
+	}
+
+	const handlePlayback = ({ url }) => {
+		if (!url) return;
+		if (audio.src !== url) {
+			audio.src = url;
+			audio.load();
+		}
+		if (audio.paused) {
+			audio.play();
+		}
+		else {
+			audio.pause();
+		}
+		setPlaybackState({
+			playing: !audio.paused,
+			duration: audio.duration,
+			currentTime: audio.currentTime,
+			src: audio.src
+		});
+	};
+
 	const handleSearch = (event, search = false) => {
 		if (event.key === "Enter" || search) {
 			setSelectedTrack(null);
-			// setSimilarity(null);
 			setDisplayMessage(searchQuery.current.value);
 		}
 	}
@@ -98,7 +179,7 @@ export const Content = () => {
 						justifyContent: "center"
 					}}>
 						<Input
-							css={{ width: "95%" }}
+							css={{ width: "100%" }}
 							labelPlaceholder="Search"
 							ref={searchQuery}
 							onKeyDown={handleSearch}
@@ -115,55 +196,75 @@ export const Content = () => {
 						{searchResults?.map((track) => {
 							return (
 								<Grid key={track.id} xs={12} sm={6} md={3}>
-									<TrackCard track={track} isHoverable={true} isPressable={true} isSelected={handleSelection} />
+									<TrackCard
+										accessToken={accessToken}
+										refreshToken={refreshToken}
+										track={track}
+										isHoverable={true}
+										isPressable={true}
+										isPlaying={handlePlayback}
+										isSelected={handleSelection}
+										playbackState={playbackState} />
 								</Grid>
 							);
 						})}
-						{selectedTrack && (
-							<Box css={{
-								display: "flex",
-								flexDirection: "column",
-								padding: "0px",
-								alignItems: "start",
-								justifyContent: "center",
-								width: "100%"
-							}}>
-								<Progress
-									indeterminated={!allTracks}
-									value={similarity || 50}
-									max={100}
-									color="success"
-									status="success"
-								/>
-								<Spacer y={1} />
-								{similarity ?
-									<Text h3>{
-										similarity === 100 ?
-											`The song ${selectedTrack.name} by ${selectedTrack.artists[0].name} is already in your library.` :
-											`The song ${selectedTrack.name} by ${selectedTrack.artists[0].name} is ${similarity}% similar to your music.`
-									}</Text> : <Text h3>Calculating similarity</Text>
-								}
-							</Box>
-						)}
+
 					</Grid.Container>
+					{selectedTrack && (
+						<Box css={{
+							display: "flex",
+							flexDirection: "column",
+							padding: "0px",
+							alignItems: "start",
+							justifyContent: "center",
+							width: "100%",
+						}}>
+							<Progress
+								indeterminated={!allTracks}
+								value={similarity || 50}
+								max={100}
+								color="success"
+								status="success"
+							/>
+							<Spacer y={1} />
+							{similarity ?
+								<Text h3>{
+									similarity === 100 ?
+										`The song ${selectedTrack.name} by ${selectedTrack.artists[0].name} is already in your library.` :
+										`The song ${selectedTrack.name} by ${selectedTrack.artists[0].name} is ${similarity}% similar to your music.`
+								}</Text> : <Text h3>Calculating similarity</Text>
+							}
+						</Box>
+					)}
 				</Collapse>
-				<Collapse title="RECOMMENDATIONS" subtitle="A list of recommendations based on what you listen to.">
+				<Collapse title="RECOMMENDATIONS" subtitle="Get recommendations based on what you listen to.">
 					<Grid.Container gap={4} justify="flex-start">
 						{recommendations?.map((track) => {
 							return (
 								<Grid key={track.id} xs={12} sm={6} md={3}>
-									<TrackCard track={track} />
+									<TrackCard
+										accessToken={accessToken}
+										refreshToken={refreshToken}
+										track={track}
+										isPlaying={handlePlayback}
+										playbackState={playbackState} />
 								</Grid>
 							);
 						})}
 					</Grid.Container>
 				</Collapse>
-				<Collapse title="TOP TRACKS" subtitle="Your favourite songs right now.">
+				<Collapse title="TOP TRACKS" subtitle="See the songs you listen to the most at the moment.">
 					<Grid.Container gap={4} justify="flex-start">
 						{tracks?.map((track) => {
 							return (
 								<Grid key={track.id} xs={12} sm={6} md={3}>
-									<TrackCard track={track} />
+									<TrackCard
+										accessToken={accessToken}
+										refreshToken={refreshToken}
+										track={track}
+										topTrack={true}
+										isPlaying={handlePlayback}
+										playbackState={playbackState} />
 								</Grid>
 							);
 						})}

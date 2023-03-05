@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { setAllTracks, setLogout, setRecommendations, setTracks } from "../../state";
+import { setAccessToken, setAllTracks, setLogout, setRecommendations, setTracks } from "../../state";
 import useAuth from "../../utils/useAuth";
 import { Navbar, Button, Text } from "@nextui-org/react";
 import { Layout } from "../../components/Layout";
@@ -9,6 +9,7 @@ import { Logo } from "../../components/Logo";
 import { loginUrl } from "../../utils/Spotify";
 import { Content } from "../../components/Content";
 import { Login } from "../../components/Login";
+import { refreshAccessToken } from "../../utils/refreshToken";
 
 const code = new URLSearchParams(window.location.search).get('code')
 
@@ -17,32 +18,41 @@ const Dashboard = () => {
 
     const dispatch = useDispatch();
 
-    const token = useSelector((state) => state.accessToken);
+    const accessToken = useSelector((state) => state.accessToken);
+    const refreshToken = useSelector((state) => state.refreshToken);
     const tracks = useSelector((state) => state.tracks);
     const allTracks = useSelector((state) => state.allTracks);
 
     const getTopTracks = (controller) => {
-        if (!token) return;
+        if (!accessToken) return;
         axios.post("http://localhost:3001/tracks/toptracks",
-            { token },
+            { token: accessToken },
             { signal: controller.signal })
             .then((response) => {
-                console.log(response.data.topTracks)
+                console.log(response);
                 dispatch(
                     setTracks({
-                        tracks: response.data.topTracks,
+                        tracks: response.data.topTracksUpdated,
                     })
                 );
             })
             .catch((error) => {
-                console.log(error.response)
+                if (error.status !== 401) return
+                refreshAccessToken(refreshToken).then((token) => {
+                    dispatch(
+                        setAccessToken({
+                            token
+                        })
+                    );
+                    getTopTracks(controller);
+                })
             })
     }
 
     const getAllTracks = (controller) => {
-        if (!token) return;
+        if (!accessToken) return;
         axios.post("http://localhost:3001/tracks/alltracks",
-            { token },
+            { token: accessToken },
             { signal: controller.signal })
             .then((response) => {
                 dispatch(
@@ -51,22 +61,38 @@ const Dashboard = () => {
                     })
                 );
             }).catch((error) => {
-                console.log(error);
+                if (error.status !== 401) return
+                refreshAccessToken(refreshToken).then((token) => {
+                    dispatch(
+                        setAccessToken({
+                            token
+                        })
+                    );
+                    getAllTracks(controller);
+                })
             })
     }
 
     const getRecommendations = (trackIds) => {
-        if (!token) return;
-        axios.post("http://localhost:3001/tracks/recommendations", { token, trackIds })
+        if (!accessToken) return;
+        axios.post("http://localhost:3001/tracks/recommendations", { token: accessToken, trackIds })
             .then((response) => {
                 dispatch(
                     setRecommendations({
-                        recommendations: response.data.recommendations,
+                        recommendations: response.data.recommendationsUpdated,
                     })
                 );
             })
             .catch((error) => {
-                console.log(error.response)
+                if (error.status !== 401) return
+                refreshAccessToken(refreshToken).then((token) => {
+                    dispatch(
+                        setAccessToken({
+                            token
+                        })
+                    );
+                    getRecommendations(trackIds);
+                })
             })
     }
 
@@ -77,7 +103,6 @@ const Dashboard = () => {
     const handleLogout = () => {
         axios.get("http://localhost:3001/auth/logout")
             .then((response) => {
-                console.log(response);
                 dispatch(
                     setLogout()
                 );
@@ -95,7 +120,7 @@ const Dashboard = () => {
 
         return () => controller.abort();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [token])
+    }, [accessToken])
 
     useEffect(() => {
         if (tracks.length === 0) return;
@@ -109,34 +134,30 @@ const Dashboard = () => {
             const track = tracks[index];
             topTrackIds.push(track.id);
         }
-        // const topTrackIds = tracks.slice(0, 5).map((track) => track.id);
         getRecommendations(topTrackIds);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [tracks])
 
     return (
-        <>
-
-            <Layout>
-                <Navbar variant="sticky">
-                    <Navbar.Brand>
-                        <Logo />
-                        <Text b color="inherit" hideIn="xs">
-                            SPOTIGENIE
-                        </Text>
-                    </Navbar.Brand>
-                    <Navbar.Content>
-                        <Navbar.Item>
-                            {token ?
-                                <Button color="success" auto onPress={handleLogout}> Logout </Button> :
-                                <Button color="success" auto onPress={handleLogin}> Login </Button>
-                            }
-                        </Navbar.Item>
-                    </Navbar.Content>
-                </Navbar>
-                {token ? <Content /> : <Login />}
-            </Layout>
-        </>
+        <Layout>
+            <Navbar variant="static">
+                <Navbar.Brand>
+                    <Logo />
+                    <Text b color="inherit" hideIn="xs">
+                        SPOTIGENIE
+                    </Text>
+                </Navbar.Brand>
+                <Navbar.Content>
+                    <Navbar.Item>
+                        {accessToken ?
+                            <Button flat color="success" auto onPress={handleLogout}> Logout </Button> :
+                            <Button flat color="success" auto onPress={handleLogin}> Login </Button>
+                        }
+                    </Navbar.Item>
+                </Navbar.Content>
+            </Navbar>
+            {accessToken ? <Content /> : <Login />}
+        </Layout>
     )
 }
 

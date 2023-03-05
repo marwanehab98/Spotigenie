@@ -28,6 +28,9 @@ export const authSlice = createSlice({
             state.tracks = [];
             state.allTracks = false;
         },
+        setAccessToken: (state, action) => {
+            state.accessToken = action.payload.accessToken;
+        },
         setTracks: (state, action) => {
             state.tracks = action.payload.tracks;
         },
@@ -43,6 +46,7 @@ export const authSlice = createSlice({
 export const {
     setLogin,
     setLogout,
+    setAccessToken,
     setTracks,
     setRecommendations,
     setAllTracks,

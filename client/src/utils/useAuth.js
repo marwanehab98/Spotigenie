@@ -11,10 +11,7 @@ export default function useAuth(code) {
     const token = useSelector((state) => state.accessToken);
 
     const login = () => {
-        if (!code || token) {
-            console.log(token)
-            return;
-        }
+        if (!code || token) return;
         axios.post("http://localhost:3001/auth/login", { code })
             .then((response) => {
                 dispatch(
@@ -34,6 +31,6 @@ export default function useAuth(code) {
 
     useEffect(() => {
         login();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 }

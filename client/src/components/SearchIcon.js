@@ -1,7 +1,3 @@
-// export const Search = () => (
-
-// );
-
 export const Search = ({
     fill = "currentColor",
     filled,

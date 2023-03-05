@@ -1,21 +1,39 @@
 import spotifyWebApi from "spotify-web-api-node";
 import similarity from "cosine-similarity"
 import NodeCache from "node-cache";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const myCache = new NodeCache();
-
 const credentials = {
     clientId: process.env.CLIENT_ID,
     clientSecret: process.env.CLIENT_SECRET,
     redirectUri: process.env.REDIRECT_URI,
 };
 
+const checkSavedTracks = async (token, tracks) => {
+    try {
+        var spotifyApi = new spotifyWebApi(credentials);
+        spotifyApi.setAccessToken(token);
+        const trackIds = tracks.map((track) => track.id);
+        const isSaved = await spotifyApi.containsMySavedTracks(trackIds)
+        return isSaved.body;
+    } catch (error) {
+        console.log(error);
+    }
+}
+
 export const getTopTracks = async (req, res) => {
     try {
         var spotifyApi = new spotifyWebApi(credentials);
         spotifyApi.setAccessToken(req.body.token);
-        const topTracks = await spotifyApi.getMyTopTracks({ limit: 48 })
-        res.status(200).json({ topTracks: topTracks.body.items });
+        const topTracks = await spotifyApi.getMyTopTracks({ limit: 48 });
+        const isSaved = await checkSavedTracks(req.body.token, topTracks.body.items);
+        const topTracksUpdated = topTracks.body.items.map((track, index) => {
+            return { ...track, is_saved: isSaved[index] }
+        });
+        res.status(200).json({ topTracksUpdated });
     } catch (error) {
         res.status(error.statusCode).json({ error: error });
     }
@@ -26,7 +44,11 @@ export const getRecommendations = async (req, res) => {
         var spotifyApi = new spotifyWebApi(credentials);
         spotifyApi.setAccessToken(req.body.token);
         const recommendations = await spotifyApi.getRecommendations({ seed_tracks: req.body.trackIds, limit: 48 })
-        res.status(200).json({ recommendations: recommendations.body.tracks });
+        const isSaved = await checkSavedTracks(req.body.token, recommendations.body.tracks);
+        const recommendationsUpdated = recommendations.body.tracks.map((track, index) => {
+            return { ...track, is_saved: isSaved[index] }
+        });
+        res.status(200).json({ recommendationsUpdated });
     } catch (error) {
         res.status(error.statusCode).json({ error: error });
     }
@@ -36,12 +58,42 @@ export const searchSongs = async (req, res) => {
     try {
         var spotifyApi = new spotifyWebApi(credentials);
         spotifyApi.setAccessToken(req.body.token);
-        const tracks = await spotifyApi.searchTracks(req.body.searchQuery, { limit: 4 })
-        res.status(200).json({ results: tracks.body.tracks.items });
+        const results = await spotifyApi.searchTracks(req.body.searchQuery, { limit: 4 })
+        const isSaved = await checkSavedTracks(req.body.token, results.body.tracks.items);
+        const resultsUpdated = results.body.tracks.items.map((track, index) => {
+            return { ...track, is_saved: isSaved[index] }
+        });
+        res.status(200).json({ resultsUpdated });
     } catch (error) {
         res.status(error.statusCode).json({ error: error });
     }
 
+}
+
+export const likeTrack = async (req, res) => {
+    try {
+        var spotifyApi = new spotifyWebApi(credentials);
+        spotifyApi.setAccessToken(req.body.token);
+        console.log(req.body.track)
+        const response = await spotifyApi.addToMySavedTracks(req.body.track);
+        res.status(200).json({ response });
+    } catch (error) {
+        res.status(error.statusCode).json({ error: error });
+    }
+}
+
+
+export const unlikeTrack = async (req, res) => {
+    try {
+        var spotifyApi = new spotifyWebApi(credentials);
+        spotifyApi.setAccessToken(req.body.token);
+        console.log(req.body.track);
+        const response = await spotifyApi.removeFromMySavedTracks(req.body.track);
+        console.log(response);
+        res.status(200).json({ response });
+    } catch (error) {
+        res.status(error.statusCode).json({ error: error });
+    }
 }
 
 export const getAllTracks = async (req, res) => {
@@ -53,7 +105,7 @@ export const getAllTracks = async (req, res) => {
         var spotifyApi = new spotifyWebApi(credentials);
         spotifyApi.setAccessToken(req.body.token);
         do {
-            console.log(next);
+            // console.log(next);
             const myTracks = await spotifyApi.getMySavedTracks({
                 limit: limit,
                 offset: offset,
