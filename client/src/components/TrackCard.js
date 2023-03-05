@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { setAccessToken } from "../state";
 import { refreshAccessToken } from "../utils/refreshToken";
-import { HeartIcon } from "./HeartIcon";
+import { HeartIcon } from "./logos/HeartIcon";
 
 
 export const TrackCard = ({

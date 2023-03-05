@@ -5,7 +5,7 @@ import { setAccessToken, setAllTracks, setLogout, setRecommendations, setTracks 
 import useAuth from "../../utils/useAuth";
 import { Navbar, Button, Text } from "@nextui-org/react";
 import { Layout } from "../../components/Layout";
-import { Logo } from "../../components/Logo";
+import { Logo } from "../../components/logos/Logo";
 import { loginUrl } from "../../utils/Spotify";
 import { Content } from "../../components/Content";
 import { Login } from "../../components/Login";
@@ -150,8 +150,8 @@ const Dashboard = () => {
                 <Navbar.Content>
                     <Navbar.Item>
                         {accessToken ?
-                            <Button flat color="success" auto onPress={handleLogout}> Logout </Button> :
-                            <Button flat color="success" auto onPress={handleLogin}> Login </Button>
+                            <Button color="success" auto onPress={handleLogout}> Logout </Button> :
+                            <Button color="success" auto onPress={handleLogin}> Login </Button>
                         }
                     </Navbar.Item>
                 </Navbar.Content>

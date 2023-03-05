@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Box } from "./Box.js"
 import { TrackCard } from "./TrackCard.js";
 import { SearchButton } from "./SearchButton.js";
-import { Search } from "./SearchIcon.js";
+import { Search } from "./logos/SearchIcon.js";
 import { refreshAccessToken } from "../utils/refreshToken.js";
 import { setAccessToken } from "../state/index.js";
 
