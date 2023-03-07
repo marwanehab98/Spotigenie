@@ -13,13 +13,13 @@ export const Login = () => {
             <Text
                 css={{
                     textGradient: "45deg, $blue600 -20%, $pink600 50%",
-                    width: "50%"
+                    width: "20rem"
                 }}
                 h1>Explore new music, find your top songs, and get predictions.</Text>
             <Spacer y={1} />
-            <Text h3 css={{ width: "30%" }}>
+            <Text h3 css={{ width: "15rem" }}>
                 Once you log in you will be able to see your favourite tracks.
-                Then we will start analyzing your songs to give you suggestions and predictions on whether you'll like a song or not.
+                Then we will start analyzing the songs you love to give you suggestions and predictions.
             </Text>
             {/* <Spacer y={1} /> */}
             <Text h4></Text>

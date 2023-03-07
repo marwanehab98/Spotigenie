@@ -10,6 +10,8 @@ import { loginUrl } from "../../utils/Spotify";
 import { Content } from "../../components/Content";
 import { Login } from "../../components/Login";
 import { refreshAccessToken } from "../../utils/refreshToken";
+import { Linkedin } from "../../components/logos/Linkedin";
+import { Github } from "../../components/logos/Github";
 
 const code = new URLSearchParams(window.location.search).get('code')
 
@@ -93,6 +95,7 @@ const Dashboard = () => {
                     );
                     getRecommendations(trackIds);
                 })
+
             })
     }
 
@@ -148,6 +151,24 @@ const Dashboard = () => {
                     </Text>
                 </Navbar.Brand>
                 <Navbar.Content>
+                    <Navbar.Item>
+                        <>
+                            <Button
+                                target="_blank"
+                                icon={<Linkedin />}
+                                light
+                                as={"a"}
+                                href="https://www.linkedin.com/in/marwan-ehab-48b0831ab"
+                                auto />
+                            <Button
+                                target="_blank"
+                                icon={<Github />}
+                                light
+                                as={"a"}
+                                href="https://github.com/marwanehab98"
+                                auto />
+                        </>
+                    </Navbar.Item>
                     <Navbar.Item>
                         {accessToken ?
                             <Button color="success" auto onPress={handleLogout}> Logout </Button> :

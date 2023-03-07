@@ -20,7 +20,7 @@ const checkSavedTracks = async (token, tracks) => {
         const isSaved = await spotifyApi.containsMySavedTracks(trackIds)
         return isSaved.body;
     } catch (error) {
-        console.log(error);
+        throw error
     }
 }
 
@@ -74,7 +74,6 @@ export const likeTrack = async (req, res) => {
     try {
         var spotifyApi = new spotifyWebApi(credentials);
         spotifyApi.setAccessToken(req.body.token);
-        console.log(req.body.track)
         const response = await spotifyApi.addToMySavedTracks(req.body.track);
         res.status(200).json({ response });
     } catch (error) {
@@ -87,7 +86,6 @@ export const unlikeTrack = async (req, res) => {
     try {
         var spotifyApi = new spotifyWebApi(credentials);
         spotifyApi.setAccessToken(req.body.token);
-        console.log(req.body.track);
         const response = await spotifyApi.removeFromMySavedTracks(req.body.track);
         console.log(response);
         res.status(200).json({ response });
@@ -105,7 +103,6 @@ export const getAllTracks = async (req, res) => {
         var spotifyApi = new spotifyWebApi(credentials);
         spotifyApi.setAccessToken(req.body.token);
         do {
-            // console.log(next);
             const myTracks = await spotifyApi.getMySavedTracks({
                 limit: limit,
                 offset: offset,
@@ -117,7 +114,6 @@ export const getAllTracks = async (req, res) => {
             next = myTracks.body.next;
             offset = offset + limit;
         } while (next);
-        // res.status(200).json({ tracks });
         const success = myCache.set("tracks", tracks);
         res.status(200).json({ success });
     }
@@ -153,7 +149,6 @@ export const checkSimilarity = async (req, res) => {
         });
         res.status(200).json({ results: Math.round(r / (tracks.length !== 0 ? tracks.length : 1)) });
     } catch (error) {
-        console.log(error)
-        // res.status(error.statusCode).json({ error: error });
+        res.status(error.statusCode).json({ error: error });
     }
 }

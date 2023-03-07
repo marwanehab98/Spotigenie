@@ -49,8 +49,7 @@ export const TrackCard = ({
         if (!accessToken) return;
         axios.post("http://localhost:3001/tracks/like",
             { track: [track.id], token: accessToken })
-            .then((response) => {
-                console.log(response)
+            .then(() => {
                 setIsSaved(true);
             }).catch((error) => {
                 console.log(error)
@@ -61,7 +60,6 @@ export const TrackCard = ({
                             token
                         })
                     );
-                    addToLikes();
                 })
             })
     }
@@ -70,8 +68,7 @@ export const TrackCard = ({
         if (!accessToken) return;
         axios.post("http://localhost:3001/tracks/unlike",
             { track: [track.id], token: accessToken })
-            .then((response) => {
-                console.log(response)
+            .then(() => {
                 setIsSaved(false);
             }).catch((error) => {
                 console.log(error)
@@ -82,7 +79,6 @@ export const TrackCard = ({
                             token
                         })
                     );
-                    removeFromLikes();
                 })
             })
     }
@@ -92,7 +88,12 @@ export const TrackCard = ({
     const image = track.album.images[0].url;
 
     return (
-        <Card variant="shadow" onPress={handlePress} isHoverable={isHoverable} isPressable={isPressable} css={{ w: "100%" }}>
+        <Card
+            variant="shadow"
+            onPress={handlePress}
+            isHoverable={isHoverable}
+            isPressable={isPressable}
+            css={{ bw: 0, w: "100%" }}>
             <Card.Header css={{ justifyContent: "flex-end", position: "absolute", zIndex: 1, top: 5 }}>
                 <Button.Group
                     auto
@@ -101,6 +102,7 @@ export const TrackCard = ({
                 >
                     <Button
                         flat
+                        animated
                         ripple={false}
                         onPress={handlePlay}
                         disabled={!track.preview_url}

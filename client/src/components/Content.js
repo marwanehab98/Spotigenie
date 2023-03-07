@@ -42,7 +42,7 @@ export const Content = () => {
 			.then((response) => {
 				setSimilarity(response.data.results);
 			}).catch((error) => {
-				console.log(error);
+				if (error.status !== 401) return
 				refreshAccessToken(refreshToken).then((token) => {
 					dispatch(
 						setAccessToken({
@@ -62,7 +62,7 @@ export const Content = () => {
 			.then((response) => {
 				setSearchResults(response.data.resultsUpdated);
 			}).catch((error) => {
-				console.log(error);
+				if (error.status !== 401) return
 				refreshAccessToken(refreshToken).then((token) => {
 					dispatch(
 						setAccessToken({
@@ -91,7 +91,7 @@ export const Content = () => {
 	useEffect(() => {
 		if (!allTracks || !selectedTrack) return;
 
-		setSimilarity(null);
+		// setSimilarity(null);
 
 		const controller = new AbortController();
 
@@ -106,35 +106,40 @@ export const Content = () => {
 		setSelectedTrack(data.track);
 	};
 
-	useEffect(() => {
-		if (audio.paused || isNaN(audio.duration)) return;
-		const timeout = setTimeout(() => {
-			setPlaybackState({
-				playing: false,
-				duration: 0,
-				currentTime: 0,
-				src: ""
-			});
-		}, (audio.duration - audio.currentTime) * 1000);
-
-		const interval = setInterval(() => {
-			setPlaybackState(p => {
-				return { ...p, currentTime: audio.currentTime }
-			});
-		}, 1000);
-
-		return () => {
-			clearTimeout(timeout);
-			clearInterval(interval);
-		}
-	}, [playbackState])
-
 	audio.onloadedmetadata = () => {
 		setPlaybackState({
 			playing: !audio.paused,
 			duration: audio.duration,
 			currentTime: audio.currentTime,
 			src: audio.src
+		});
+	}
+
+	audio.ontimeupdate = () => {
+		setPlaybackState(p => {
+			var updatedPlayback = p;
+			if (audio.currentTime - p.currentTime >= 0.5) {
+				updatedPlayback = { ...p, currentTime: Math.round(audio.currentTime) };
+			}
+			return updatedPlayback;
+		});
+	}
+
+	audio.onplay = () => {
+		setPlaybackState(p => {
+			return { ...p, playing: true };
+		});
+	}
+
+	audio.onpause = () => {
+		setPlaybackState(p => {
+			return { ...p, playing: false };
+		});
+	}
+
+	audio.onended = () => {
+		setPlaybackState(p => {
+			return { ...p, playing: false };
 		});
 	}
 
@@ -150,12 +155,6 @@ export const Content = () => {
 		else {
 			audio.pause();
 		}
-		setPlaybackState({
-			playing: !audio.paused,
-			duration: audio.duration,
-			currentTime: audio.currentTime,
-			src: audio.src
-		});
 	};
 
 	const handleSearch = (event, search = false) => {
@@ -175,10 +174,12 @@ export const Content = () => {
 			<Collapse.Group shadow bordered>
 				<Collapse title="SEARCH" subtitle="Search for a song and we'll tell you how much you'll like it.">
 					<Box css={{
+						p: "10px",
 						display: "flex",
 						justifyContent: "center"
 					}}>
 						<Input
+							color="success"
 							css={{ width: "100%" }}
 							labelPlaceholder="Search"
 							ref={searchQuery}
@@ -220,6 +221,8 @@ export const Content = () => {
 							width: "100%",
 						}}>
 							<Progress
+								size="sm"
+								squared
 								indeterminated={!allTracks}
 								value={similarity || 50}
 								max={100}
@@ -237,7 +240,7 @@ export const Content = () => {
 						</Box>
 					)}
 				</Collapse>
-				<Collapse title="RECOMMENDATIONS" subtitle="Get recommendations based on what you listen to.">
+				<Collapse expanded title="RECOMMENDATIONS" subtitle="Get recommendations based on what you listen to.">
 					<Grid.Container gap={4} justify="flex-start">
 						{recommendations?.map((track) => {
 							return (
