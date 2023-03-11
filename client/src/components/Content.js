@@ -42,7 +42,7 @@ export const Content = () => {
 			.then((response) => {
 				setSimilarity(response.data.results);
 			}).catch((error) => {
-				if (error.status !== 401) return
+				if (error.response.status !== 401) return
 				refreshAccessToken(refreshToken).then((token) => {
 					dispatch(
 						setAccessToken({
@@ -62,7 +62,7 @@ export const Content = () => {
 			.then((response) => {
 				setSearchResults(response.data.resultsUpdated);
 			}).catch((error) => {
-				if (error.status !== 401) return
+				if (error.response.status !== 401) return
 				refreshAccessToken(refreshToken).then((token) => {
 					dispatch(
 						setAccessToken({
@@ -165,7 +165,7 @@ export const Content = () => {
 	}
 
 	return (
-		<Box css={{ margin: "0.5rem", px: "$12", mt: "$8", "@xsMax": { px: "$10" } }}>
+		<Box css={{ px: "$12", mt: "$8", "@xsMax": { px: "$10" } }}>
 			<Text
 				css={{
 					textGradient: "45deg, $blue600 -20%, $pink600 50%",
@@ -179,8 +179,11 @@ export const Content = () => {
 						justifyContent: "center"
 					}}>
 						<Input
+							bordered
 							color="success"
-							css={{ width: "100%" }}
+							css={{ 
+								width: "100%",
+							}}
 							labelPlaceholder="Search"
 							ref={searchQuery}
 							onKeyDown={handleSearch}
@@ -195,6 +198,7 @@ export const Content = () => {
 					</Box>
 					<Grid.Container gap={4} justify="flex-start">
 						{searchResults?.map((track) => {
+							console.log(track);
 							return (
 								<Grid key={track.id} xs={12} sm={6} md={3}>
 									<TrackCard

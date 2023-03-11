@@ -85,7 +85,9 @@ export const TrackCard = ({
 
     const name = track.name;
     const artistNames = appendArtists(track.artists);
-    const image = track.album.images[0].url;
+    const album = track.album.name;
+    const image = track.artistImage;
+
 
     return (
         <Card
@@ -93,12 +95,12 @@ export const TrackCard = ({
             onPress={handlePress}
             isHoverable={isHoverable}
             isPressable={isPressable}
-            css={{ bw: 0, w: "100%" }}>
+            css={{ bw: 0, w: "100%", aspectRatio: "1 / 1" }}>
             <Card.Header css={{ justifyContent: "flex-end", position: "absolute", zIndex: 1, top: 5 }}>
                 <Button.Group
                     auto
                     color="error"
-                    css={{ bgBlur: "#ffffff66" }}
+                    css={{ bgBlur: "#0f111466" }}
                 >
                     <Button
                         flat
@@ -107,10 +109,13 @@ export const TrackCard = ({
                         onPress={handlePlay}
                         disabled={!track.preview_url}
                         css={{
-                            color: "#000",
+                            w: "7rem",
+                            jc: "flex-start",
+                            color: "#d1d1d1",
                             bgColor: "transparent",
                             "&:disabled": {
-                                bgColor: "transparent"
+                                bgColor: "transparent",
+                                color: "#d1d1d1"
                             }
                         }}
                     >
@@ -125,7 +130,10 @@ export const TrackCard = ({
                         {playing &&
                             <>
                                 <Spacer x={0.5} />
-                                <Loading type="points" color={"currentColor"} size="sm" />
+                                <Loading
+                                    type="points-opacity"
+                                    color={"currentColor"}
+                                    size="sm" />
                             </>
                         }
                     </Button>
@@ -160,32 +168,48 @@ export const TrackCard = ({
                 isBlurred
                 css={{
                     position: "absolute",
-                    bgBlur: "#ffffff66",
+                    bgBlur: "#0f111466",
                     bottom: 0,
                     zIndex: 1,
-                    height: "25%",
+                    height: "fit-content",
+                    width: "100%"
                 }}
             >
-                {playbackState.src === track.preview_url &&
-                    <Progress
-                        color="success"
-                        size="xs"
-                        value={percentage * 100}
-                        css={{
-                            borderRadius: 0,
-                            position: "absolute",
-                            top: 0,
-                            left: 0,
-                            height: "2px"
-                        }}
-                    />}
+                <Progress
+                    color="success"
+                    size="xs"
+                    value={playbackState.src === track.preview_url ? percentage * 100 : 0}
+                    css={{
+                        bc: "$gray800",
+                        borderRadius: 0,
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        height: "2px"
+                    }}
+                />
                 <Row align="center">
                     <Col>
-                        <Text color="#000" size={12} weight="bold">
+                        <Text color="#d1d1d1" size={12} weight="bold" css={{
+                            overflow: "hidden",
+                            textOverflow: "clip",
+                            whiteSpace: "nowrap",
+                        }}>
                             {name}
                         </Text>
-                        <Text color="#000" size={12} weight="bold">
+                        <Text color="#d1d1d1" size={12} weight="bold" css={{
+                            overflow: "hidden",
+                            textOverflow: "clip",
+                            whiteSpace: "nowrap",
+                        }}>
                             {artistNames}
+                        </Text>
+                        <Text color="#d1d1d1" size={12} weight="bold" css={{
+                            overflow: "hidden",
+                            textOverflow: "clip",
+                            whiteSpace: "nowrap",
+                        }}>
+                            {album}
                         </Text>
                     </Col>
                 </Row>

@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setAccessToken, setAllTracks, setLogout, setRecommendations, setTracks } from "../../state";
 import useAuth from "../../utils/useAuth";
-import { Navbar, Button, Text } from "@nextui-org/react";
+import { Navbar, Button, Text, Spacer } from "@nextui-org/react";
 import { Layout } from "../../components/Layout";
 import { Logo } from "../../components/logos/Logo";
 import { loginUrl } from "../../utils/Spotify";
@@ -39,7 +39,7 @@ const Dashboard = () => {
                 );
             })
             .catch((error) => {
-                if (error.status !== 401) return
+                if (error.response.status !== 401) return
                 refreshAccessToken(refreshToken).then((token) => {
                     dispatch(
                         setAccessToken({
@@ -63,7 +63,7 @@ const Dashboard = () => {
                     })
                 );
             }).catch((error) => {
-                if (error.status !== 401) return
+                if (error.response.status !== 401) return
                 refreshAccessToken(refreshToken).then((token) => {
                     dispatch(
                         setAccessToken({
@@ -86,8 +86,9 @@ const Dashboard = () => {
                 );
             })
             .catch((error) => {
-                if (error.status !== 401) return
+                if (error.response.status !== 401) return
                 refreshAccessToken(refreshToken).then((token) => {
+                    console.log(token)
                     dispatch(
                         setAccessToken({
                             token
@@ -105,7 +106,7 @@ const Dashboard = () => {
 
     const handleLogout = () => {
         axios.get("http://localhost:3001/auth/logout")
-            .then((response) => {
+            .then(() => {
                 dispatch(
                     setLogout()
                 );
@@ -143,15 +144,17 @@ const Dashboard = () => {
 
     return (
         <Layout>
-            <Navbar variant="static">
+            <Navbar shouldHideOnScroll variant="sticky">
                 <Navbar.Brand>
+                    <Navbar.Toggle showIn={"xs"} aria-label="toggle navigation" />
+                    <Spacer x={1} />
                     <Logo />
-                    <Text b color="inherit" hideIn="xs">
+                    <Text b color="inherit" >
                         SPOTIGENIE
                     </Text>
                 </Navbar.Brand>
-                <Navbar.Content>
-                    <Navbar.Item>
+                <Navbar.Content >
+                    <Navbar.Item hideIn={"xs"}>
                         <>
                             <Button
                                 target="_blank"
@@ -169,16 +172,43 @@ const Dashboard = () => {
                                 auto />
                         </>
                     </Navbar.Item>
-                    <Navbar.Item>
+                    <Navbar.Item hideIn={"xs"}>
                         {accessToken ?
                             <Button color="success" auto onPress={handleLogout}> Logout </Button> :
                             <Button color="success" auto onPress={handleLogin}> Login </Button>
                         }
                     </Navbar.Item>
+                    <Navbar.Collapse>
+                        <Navbar.CollapseItem>
+                            <Button
+                                target="_blank"
+                                icon={<Linkedin />}
+                                light
+                                as={"a"}
+                                href="https://www.linkedin.com/in/marwan-ehab-48b0831ab"
+                                auto >LinkedIn
+                            </Button>
+                        </Navbar.CollapseItem>
+                        <Navbar.CollapseItem>
+                            <Button
+                                target="_blank"
+                                icon={<Github />}
+                                light
+                                as={"a"}
+                                href="https://github.com/marwanehab98"
+                                auto >Github</Button>
+                        </Navbar.CollapseItem>
+                        <Navbar.CollapseItem>
+                            {accessToken ?
+                                <Button light color="default" auto onPress={handleLogout}> Logout </Button> :
+                                <Button light color="default" auto onPress={handleLogin}> Login </Button>
+                            }
+                        </Navbar.CollapseItem>
+                    </Navbar.Collapse>
                 </Navbar.Content>
             </Navbar>
             {accessToken ? <Content /> : <Login />}
-        </Layout>
+        </Layout >
     )
 }
 
