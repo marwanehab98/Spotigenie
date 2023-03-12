@@ -1,62 +1,95 @@
-import { Button, Card, Col, Loading, Progress, Row, Spacer, Text } from "@nextui-org/react"
+import { Button, Card, Col, Loading, Progress, Row, Spacer, Text, Tooltip } from "@nextui-org/react"
+import { useEffect, useState } from "react"
 import { HeartIcon } from "./logos/HeartIcon"
 import AlbumArt from "./res/albumartplacholder.png"
 
+let interval = null;
+
 export const SampleCard = () => {
+
+    const [playing, setPlaying] = useState(false);
+    const [isSaved, setIsSaved] = useState(false);
+    const [percentage, setPercentage] = useState(0);
+
+    useEffect(() => {
+        if (playing) {
+            interval = setInterval(() => setPercentage((p) => (p + 5)), 1500);
+        }
+        else setPercentage(0);
+
+        return () => clearInterval(interval);
+    }, [playing]);
+
+    useEffect(() => {
+        if (percentage === 100) {
+            setPlaying(false);
+        }
+    }, [percentage]);
+
     return (
         <Card
+            isPressable
             variant="shadow"
             css={{ borderColor: "$neutralBorder", bw: "2px", borderStyle: "solid", w: "70%", aspectRatio: "1 / 1" }}>
             <Card.Header css={{ justifyContent: "flex-end", position: "absolute", zIndex: 1, top: 5 }}>
                 <Button.Group
-                    disabled
                     auto
                     color="error"
                     css={{ bgBlur: "#0f111466" }}
                 >
-                    <Button
-                        flat
-                        animated
-                        ripple={false}
-                        css={{
-                            w: "7rem",
-                            jc: "flex-start",
-                            color: "#d1d1d1",
-                            bgColor: "transparent",
-                            "&:disabled": {
+                    <Tooltip placement="bottomStart" content={"Press me to play/pause"}>
+                        <Button
+                            onPress={() => { setPlaying((p) => !p) }}
+                            flat
+                            animated
+                            ripple={false}
+                            css={{
+                                w: "7rem",
+                                jc: "flex-start",
+                                color: "#d1d1d1",
                                 bgColor: "transparent",
-                                color: "#d1d1d1"
-                            }
-                        }}
-                    >
-                        <Text
-                            css={{ color: "inherit" }}
-                            size={12}
-                            weight="bold"
-                            transform="uppercase"
+                                "&:disabled": {
+                                    bgColor: "transparent",
+                                    color: "#d1d1d1"
+                                }
+                            }}
                         >
-                            Play
-                        </Text>
-                        <Spacer x={0.5} />
-                        <Loading
-                            type="points-opacity"
-                            color={"currentColor"}
-                            size="sm" />
-                    </Button>
-                    <Button
-                        flat
-                        ripple={false}
-                        color="error"
-                        icon={<HeartIcon fill="currentColor" filled={true} />}
-                        css={{
-                            bgColor: "transparent",
-                            "&:disabled": {
-                                bgColor: "transparent",
-                                color: "$error"
+                            <Text
+                                css={{ color: "inherit" }}
+                                size={12}
+                                weight="bold"
+                                transform="uppercase"
+                            >
+                                {playing ? "Pause" : "Play"}
+                            </Text>
+                            {playing &&
+                                <>
+                                    <Spacer x={0.5} />
+                                    <Loading
+                                        type="points-opacity"
+                                        color={"currentColor"}
+                                        size="sm" />
+                                </>
                             }
-                        }}
-                    >
-                    </Button>
+                        </Button>
+                    </Tooltip>
+                    <Tooltip placement="bottomEnd" content={"Press me to add/remove song to your Spotify library."}>
+                        <Button
+                            onPress={() => { setIsSaved((s) => !s) }}
+                            flat
+                            ripple={false}
+                            color="error"
+                            icon={<HeartIcon fill="currentColor" filled={isSaved} />}
+                            css={{
+                                bgColor: "transparent",
+                                "&:disabled": {
+                                    bgColor: "transparent",
+                                    color: "$error"
+                                }
+                            }}
+                        >
+                        </Button>
+                    </Tooltip>
                 </Button.Group>
             </Card.Header>
             <Card.Body css={{ p: 0 }}>
@@ -80,10 +113,10 @@ export const SampleCard = () => {
                 }}
             >
                 <Progress
-                    indeterminated
+                    // indeterminated={playing}
                     color="success"
                     size="xs"
-                    value={100}
+                    value={playing ? percentage : 0}
                     css={{
                         bc: "$gray800",
                         borderRadius: 0,

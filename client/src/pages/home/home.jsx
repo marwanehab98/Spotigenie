@@ -39,7 +39,7 @@ const Dashboard = () => {
                 );
             })
             .catch((error) => {
-                if (error.response.status !== 401) return
+                if (error?.response?.status !== 401) return
                 refreshAccessToken(refreshToken).then((token) => {
                     dispatch(
                         setAccessToken({
@@ -63,7 +63,7 @@ const Dashboard = () => {
                     })
                 );
             }).catch((error) => {
-                if (error.response.status !== 401) return
+                if (error?.response?.status !== 401) return
                 refreshAccessToken(refreshToken).then((token) => {
                     dispatch(
                         setAccessToken({
@@ -86,7 +86,7 @@ const Dashboard = () => {
                 );
             })
             .catch((error) => {
-                if (error.response.status !== 401) return
+                if (error?.response?.status !== 401) return
                 refreshAccessToken(refreshToken).then((token) => {
                     console.log(token)
                     dispatch(

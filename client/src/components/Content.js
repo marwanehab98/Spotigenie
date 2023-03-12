@@ -42,7 +42,7 @@ export const Content = () => {
 			.then((response) => {
 				setSimilarity(response.data.results);
 			}).catch((error) => {
-				if (error.response.status !== 401) return
+				if (error?.response?.status !== 401) return
 				refreshAccessToken(refreshToken).then((token) => {
 					dispatch(
 						setAccessToken({
@@ -62,7 +62,7 @@ export const Content = () => {
 			.then((response) => {
 				setSearchResults(response.data.resultsUpdated);
 			}).catch((error) => {
-				if (error.response.status !== 401) return
+				if (error?.response?.status !== 401) return
 				refreshAccessToken(refreshToken).then((token) => {
 					dispatch(
 						setAccessToken({

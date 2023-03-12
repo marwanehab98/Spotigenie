@@ -53,7 +53,7 @@ export const TrackCard = ({
                 setIsSaved(true);
             }).catch((error) => {
                 console.log(error)
-                if (error.status !== 401) return
+                if (error?.status !== 401) return
                 refreshAccessToken(refreshToken).then((token) => {
                     dispatch(
                         setAccessToken({
@@ -72,7 +72,7 @@ export const TrackCard = ({
                 setIsSaved(false);
             }).catch((error) => {
                 console.log(error)
-                if (error.status !== 401) return
+                if (error?.status !== 401) return
                 refreshAccessToken(refreshToken).then((token) => {
                     dispatch(
                         setAccessToken({
