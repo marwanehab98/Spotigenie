@@ -6,20 +6,25 @@ Spotigenie is a music recommendation web app made with NodeJS and ReactJS.
 
 ### Finding your most played songs at the moment.
 
-![Top songs](folder.png)
+![Top songs](./images/top-songs.png)
 
 ### Giving recommendations based on your most played songs.
 
-`Insert image here`
+![Recommendations](./images/recommendations.png)
 
 ### Predicting whether you'll like a song based on your library.
 
-`Insert image here`
+![Prediction](./images/prediction.png)
 
 ### Responsive UI
 
-`Insert image here`
+![Responisve UI 1](./images/search-vertical.png)
+![Responisve UI 2](./images/prediction-vertical.png)
+![Responisve UI 3](./images/navbar-vertical.png)
 
 ### Other images
 
-`Insert image here`
+![Responisve UI 3](./images/login-wide-no-hover.png)
+![Responisve UI 3](./images/login-wide-hover-card.png)
+![Responisve UI 3](./images/login-wide-hover-play.png)
+![Responisve UI 3](./images/login-wide-hover-like.png)
