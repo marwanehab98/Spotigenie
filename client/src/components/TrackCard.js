@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { setAccessToken } from "../state";
 import { refreshAccessToken } from "../utils/refreshToken";
+import useAxios from "../utils/useAxios";
 import { HeartIcon } from "./logos/HeartIcon";
 
 
@@ -19,6 +20,8 @@ export const TrackCard = ({
     playbackState }) => {
 
     const dispatch = useDispatch();
+
+    let api = useAxios()
 
     const playing = playbackState.playing && playbackState.src === track.preview_url;
     const percentage = playbackState.currentTime / playbackState.duration;
@@ -45,42 +48,30 @@ export const TrackCard = ({
         else addToLikes();
     }
 
-    const addToLikes = () => {
+    const addToLikes = async () => {
         if (!accessToken) return;
-        axios.post("http://localhost:3001/tracks/like",
-            { track: [track.id], token: accessToken })
-            .then(() => {
+        try {
+            let response = await api.post('/tracks/like',
+                { track: [track.id] });
+            if (response.status === 200) {
                 setIsSaved(true);
-            }).catch((error) => {
-                console.log(error)
-                if (error?.status !== 401) return
-                refreshAccessToken(refreshToken).then((token) => {
-                    dispatch(
-                        setAccessToken({
-                            token
-                        })
-                    );
-                })
-            })
+            }
+        } catch (error) {
+            console.log(error);
+        }
     }
 
-    const removeFromLikes = () => {
+    const removeFromLikes = async () => {
         if (!accessToken) return;
-        axios.post("http://localhost:3001/tracks/unlike",
-            { track: [track.id], token: accessToken })
-            .then(() => {
+        try {
+            let response = await api.post('/tracks/unlike',
+                { track: [track.id] });
+            if (response.status === 200) {
                 setIsSaved(false);
-            }).catch((error) => {
-                console.log(error)
-                if (error?.status !== 401) return
-                refreshAccessToken(refreshToken).then((token) => {
-                    dispatch(
-                        setAccessToken({
-                            token
-                        })
-                    );
-                })
-            })
+            }
+        } catch (error) {
+            console.log(error);
+        }
     }
 
     const name = track.name;
@@ -95,7 +86,7 @@ export const TrackCard = ({
             onPress={handlePress}
             isHoverable={isHoverable}
             isPressable={isPressable}
-            css={{ bw: 0, w: "100%", aspectRatio: "1 / 1" }}>
+            css={{ bw: 0, w: "100%", aspectRatio: "1 / 1", "@smMax": { aspectRatio: "4 / 3" }, }}>
             <Card.Header css={{ justifyContent: "flex-end", position: "absolute", zIndex: 1, top: 5 }}>
                 <Button.Group
                     auto

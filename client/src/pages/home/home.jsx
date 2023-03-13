@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { setAccessToken, setAllTracks, setLogout, setRecommendations, setTracks } from "../../state";
+import { setLogout, setRecommendations, setTracks } from "../../state";
 import useAuth from "../../utils/useAuth";
 import { Navbar, Button, Text, Spacer } from "@nextui-org/react";
 import { Layout } from "../../components/Layout";
@@ -9,9 +9,9 @@ import { Logo } from "../../components/logos/Logo";
 import { loginUrl } from "../../utils/Spotify";
 import { Content } from "../../components/Content";
 import { Login } from "../../components/Login";
-import { refreshAccessToken } from "../../utils/refreshToken";
 import { Linkedin } from "../../components/logos/Linkedin";
 import { Github } from "../../components/logos/Github";
+import useAxios from '../../utils/useAxios.js'
 
 const code = new URLSearchParams(window.location.search).get('code')
 
@@ -21,83 +21,42 @@ const Dashboard = () => {
     const dispatch = useDispatch();
 
     const accessToken = useSelector((state) => state.accessToken);
-    const refreshToken = useSelector((state) => state.refreshToken);
     const tracks = useSelector((state) => state.tracks);
-    const allTracks = useSelector((state) => state.allTracks);
 
-    const getTopTracks = (controller) => {
+    let api = useAxios()
+
+    const getTopTracks = async (controller) => {
         if (!accessToken) return;
-        axios.post("http://localhost:3001/tracks/toptracks",
-            { token: accessToken },
-            { signal: controller.signal })
-            .then((response) => {
-                console.log(response);
+        try {
+            let response = await api.post('/tracks/toptracks',
+                { signal: controller.signal });
+            if (response.status === 200) {
                 dispatch(
                     setTracks({
                         tracks: response.data.topTracksUpdated,
                     })
                 );
-            })
-            .catch((error) => {
-                if (error?.response?.status !== 401) return
-                refreshAccessToken(refreshToken).then((token) => {
-                    dispatch(
-                        setAccessToken({
-                            token
-                        })
-                    );
-                    getTopTracks(controller);
-                })
-            })
+            }
+        } catch (error) {
+            console.log(error);
+        }
     }
 
-    const getAllTracks = (controller) => {
+    const getRecommendations = async (trackIds) => {
         if (!accessToken) return;
-        axios.post("http://localhost:3001/tracks/alltracks",
-            { token: accessToken },
-            { signal: controller.signal })
-            .then((response) => {
-                dispatch(
-                    setAllTracks({
-                        allTracks: response.data.success,
-                    })
-                );
-            }).catch((error) => {
-                if (error?.response?.status !== 401) return
-                refreshAccessToken(refreshToken).then((token) => {
-                    dispatch(
-                        setAccessToken({
-                            token
-                        })
-                    );
-                    getAllTracks(controller);
-                })
-            })
-    }
-
-    const getRecommendations = (trackIds) => {
-        if (!accessToken) return;
-        axios.post("http://localhost:3001/tracks/recommendations", { token: accessToken, trackIds })
-            .then((response) => {
+        try {
+            let response = await api.post('/tracks/recommendations',
+                { trackIds });
+            if (response.status === 200) {
                 dispatch(
                     setRecommendations({
                         recommendations: response.data.recommendationsUpdated,
                     })
                 );
-            })
-            .catch((error) => {
-                if (error?.response?.status !== 401) return
-                refreshAccessToken(refreshToken).then((token) => {
-                    console.log(token)
-                    dispatch(
-                        setAccessToken({
-                            token
-                        })
-                    );
-                    getRecommendations(trackIds);
-                })
-
-            })
+            }
+        } catch (error) {
+            console.log(error);
+        }
     }
 
     const handleLogin = () => {
@@ -112,7 +71,7 @@ const Dashboard = () => {
                 );
             })
             .catch((error) => {
-                console.log(error.response)
+                console.log(error)
             })
     }
 
@@ -120,7 +79,6 @@ const Dashboard = () => {
         const controller = new AbortController();
 
         if (tracks.length === 0) getTopTracks(controller);
-        if (!allTracks) getAllTracks(controller);
 
         return () => controller.abort();
         // eslint-disable-next-line react-hooks/exhaustive-deps

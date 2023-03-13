@@ -8,6 +8,7 @@ import { SearchButton } from "./SearchButton.js";
 import { Search } from "./logos/SearchIcon.js";
 import { refreshAccessToken } from "../utils/refreshToken.js";
 import { setAccessToken } from "../state/index.js";
+import useAxios from "../utils/useAxios.js";
 
 const audio = new Audio();
 audio.preload = "metadata";
@@ -15,9 +16,10 @@ audio.preload = "metadata";
 export const Content = () => {
 	const dispatch = useDispatch();
 
+	let api = useAxios()
+
 	const accessToken = useSelector((state) => state.accessToken);
 	const refreshToken = useSelector((state) => state.refreshToken);
-	const allTracks = useSelector((state) => state.allTracks);
 	const tracks = useSelector((state) => state.tracks);
 	const recommendations = useSelector((state) => state.recommendations);
 	const user = useSelector((state) => state.user);
@@ -34,44 +36,32 @@ export const Content = () => {
 		src: ""
 	});
 
-	const getSimilarity = (controller) => {
+	const getSimilarity = async (controller) => {
 		if (!accessToken) return;
-		axios.post("http://localhost:3001/tracks/similarity",
-			{ selectedTrack: selectedTrack.id, token: accessToken, allTracks },
-			{ signal: controller.signal })
-			.then((response) => {
+		try {
+			let response = await api.post('/tracks/similarity',
+				{ selectedTrack: selectedTrack.id },
+				{ signal: controller.signal });
+			if (response.status === 200) {
 				setSimilarity(response.data.results);
-			}).catch((error) => {
-				if (error?.response?.status !== 401) return
-				refreshAccessToken(refreshToken).then((token) => {
-					dispatch(
-						setAccessToken({
-							token
-						})
-					);
-					getSimilarity(controller);
-				})
-			})
+			}
+		} catch (error) {
+			console.log(error);
+		}
 	}
 
-	const searchTracks = (controller) => {
+	const searchTracks = async (controller) => {
 		if (!accessToken) return;
-		axios.post("http://localhost:3001/tracks/search",
-			{ searchQuery: displayMessage, token: accessToken },
-			{ signal: controller.signal })
-			.then((response) => {
+		try {
+			let response = await api.post('/tracks/search',
+				{ searchQuery: displayMessage },
+				{ signal: controller.signal });
+			if (response.status === 200) {
 				setSearchResults(response.data.resultsUpdated);
-			}).catch((error) => {
-				if (error?.response?.status !== 401) return
-				refreshAccessToken(refreshToken).then((token) => {
-					dispatch(
-						setAccessToken({
-							token
-						})
-					);
-					searchTracks(controller);
-				})
-			})
+			}
+		} catch (error) {
+			console.log(error);
+		}
 	}
 
 	useEffect(() => {
@@ -89,7 +79,7 @@ export const Content = () => {
 
 
 	useEffect(() => {
-		if (!allTracks || !selectedTrack) return;
+		if (!selectedTrack) return;
 
 		// setSimilarity(null);
 
@@ -99,7 +89,7 @@ export const Content = () => {
 
 		return () => controller.abort();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [selectedTrack, allTracks]);
+	}, [selectedTrack]);
 
 
 	const handleSelection = (data) => {
@@ -181,7 +171,7 @@ export const Content = () => {
 						<Input
 							bordered
 							color="success"
-							css={{ 
+							css={{
 								width: "100%",
 							}}
 							labelPlaceholder="Search"
@@ -198,7 +188,6 @@ export const Content = () => {
 					</Box>
 					<Grid.Container gap={4} justify="flex-start">
 						{searchResults?.map((track) => {
-							console.log(track);
 							return (
 								<Grid key={track.id} xs={12} sm={6} md={3}>
 									<TrackCard
@@ -226,8 +215,8 @@ export const Content = () => {
 						}}>
 							<Progress
 								size="sm"
-								squared
-								indeterminated={!allTracks}
+								// squared
+								indeterminated={!similarity}
 								value={similarity || 50}
 								max={100}
 								color="success"

@@ -7,7 +7,6 @@ const initialState = {
     refreshToken: null,
     tracks: [],
     recommendations: [],
-    allTracks: false,
 };
 
 export const authSlice = createSlice({
@@ -26,19 +25,18 @@ export const authSlice = createSlice({
             state.accessToken = null;
             state.refreshToken = null;
             state.tracks = [];
-            state.allTracks = false;
         },
         setAccessToken: (state, action) => {
             state.accessToken = action.payload.accessToken;
+        },
+        setExpiresIn: (state, action) => {
+            state.expiresIn = action.payload.expiresIn;
         },
         setTracks: (state, action) => {
             state.tracks = action.payload.tracks;
         },
         setRecommendations: (state, action) => {
             state.recommendations = action.payload.recommendations;
-        },
-        setAllTracks: (state, action) => {
-            state.allTracks = action.payload.allTracks;
         },
     }
 })
@@ -47,8 +45,8 @@ export const {
     setLogin,
     setLogout,
     setAccessToken,
+    setExpiresIn,
     setTracks,
     setRecommendations,
-    setAllTracks,
 } = authSlice.actions;
 export default authSlice.reducer;

@@ -12,6 +12,52 @@ const credentials = {
     redirectUri: process.env.REDIRECT_URI,
 };
 
+const getAllTracks = async (accessToken) => {
+    try {
+        var offset = 0;
+        var limit = 50;
+        var next = true;
+        var tracks = [];
+        var spotifyApi = new spotifyWebApi(credentials);
+        spotifyApi.setAccessToken(accessToken);
+        do {
+            const myTracks = await spotifyApi.getMySavedTracks({
+                limit: limit,
+                offset: offset,
+            });
+            const trackIds = myTracks.body.items.map((track) => track.track.id);
+            const audioFeatures = await spotifyApi.getAudioFeaturesForTracks(trackIds);
+            const audioFeaturesFiltered = audioFeatures.body.audio_features.map((
+                {
+                    danceability,
+                    energy,
+                    speechiness,
+                    acousticness,
+                    instrumentalness,
+                    liveness,
+                    valence
+                }) => {
+                return ({
+                    danceability,
+                    energy,
+                    speechiness,
+                    acousticness,
+                    instrumentalness,
+                    liveness,
+                    valence
+                })
+            });
+            tracks = [...tracks, ...audioFeaturesFiltered];
+            next = myTracks.body.next;
+            offset = offset + limit;
+        } while (next);
+        myCache.set("tracks", tracks);
+    }
+    catch (error) {
+        throw error;
+    }
+}
+
 const checkSavedTracks = async (token, tracks) => {
     try {
         var spotifyApi = new spotifyWebApi(credentials);
@@ -30,7 +76,6 @@ const getArtistImage = async (token, tracks) => {
         spotifyApi.setAccessToken(token);
         const artistIds = tracks.map((track) => track.artists[0].id);
         const response = await spotifyApi.getArtists(artistIds);
-        // console.log(response);
         const imageURLs = response.body.artists.map((artist) => artist.images[0].url);
         return imageURLs;
     } catch (error) {
@@ -40,11 +85,12 @@ const getArtistImage = async (token, tracks) => {
 
 export const getTopTracks = async (req, res) => {
     try {
+        const accessToken = req.headers.authorization;
         var spotifyApi = new spotifyWebApi(credentials);
-        spotifyApi.setAccessToken(req.body.token);
+        spotifyApi.setAccessToken(accessToken);
         const topTracks = await spotifyApi.getMyTopTracks({ limit: 48 });
-        const isSaved = await checkSavedTracks(req.body.token, topTracks.body.items);
-        const artistImages = await getArtistImage(req.body.token, topTracks.body.items);
+        const isSaved = await checkSavedTracks(accessToken, topTracks.body.items);
+        const artistImages = await getArtistImage(accessToken, topTracks.body.items);
         const topTracksUpdated = topTracks.body.items.map((track, index) => {
             return { ...track, is_saved: isSaved[index], artistImage: artistImages[index] }
         });
@@ -56,11 +102,12 @@ export const getTopTracks = async (req, res) => {
 
 export const getRecommendations = async (req, res) => {
     try {
+        const accessToken = req.headers.authorization;
         var spotifyApi = new spotifyWebApi(credentials);
-        spotifyApi.setAccessToken(req.body.token);
+        spotifyApi.setAccessToken(accessToken);
         const recommendations = await spotifyApi.getRecommendations({ seed_tracks: req.body.trackIds, limit: 48 })
-        const isSaved = await checkSavedTracks(req.body.token, recommendations.body.tracks);
-        const artistImages = await getArtistImage(req.body.token, recommendations.body.tracks);
+        const isSaved = await checkSavedTracks(accessToken, recommendations.body.tracks);
+        const artistImages = await getArtistImage(accessToken, recommendations.body.tracks);
         const recommendationsUpdated = recommendations.body.tracks.map((track, index) => {
             return { ...track, is_saved: isSaved[index], artistImage: artistImages[index] }
         });
@@ -72,11 +119,12 @@ export const getRecommendations = async (req, res) => {
 
 export const searchSongs = async (req, res) => {
     try {
+        const accessToken = req.headers.authorization;
         var spotifyApi = new spotifyWebApi(credentials);
-        spotifyApi.setAccessToken(req.body.token);
+        spotifyApi.setAccessToken(accessToken);
         const results = await spotifyApi.searchTracks(req.body.searchQuery, { limit: 4 })
-        const isSaved = await checkSavedTracks(req.body.token, results.body.tracks.items);
-        const artistImages = await getArtistImage(req.body.token, results.body.tracks.items);
+        const isSaved = await checkSavedTracks(accessToken, results.body.tracks.items);
+        const artistImages = await getArtistImage(accessToken, results.body.tracks.items);
         const resultsUpdated = results.body.tracks.items.map((track, index) => {
             return { ...track, is_saved: isSaved[index], artistImage: artistImages[index] }
         });
@@ -89,8 +137,9 @@ export const searchSongs = async (req, res) => {
 
 export const likeTrack = async (req, res) => {
     try {
+        const accessToken = req.headers.authorization;
         var spotifyApi = new spotifyWebApi(credentials);
-        spotifyApi.setAccessToken(req.body.token);
+        spotifyApi.setAccessToken(accessToken);
         const response = await spotifyApi.addToMySavedTracks(req.body.track);
         res.status(200).json({ response });
     } catch (error) {
@@ -104,51 +153,22 @@ export const unlikeTrack = async (req, res) => {
         var spotifyApi = new spotifyWebApi(credentials);
         spotifyApi.setAccessToken(req.body.token);
         const response = await spotifyApi.removeFromMySavedTracks(req.body.track);
-        // console.log(response);
         res.status(200).json({ response });
     } catch (error) {
         res.status(500).json({ error: error });
     }
 }
 
-export const getAllTracks = async (req, res) => {
-    try {
-        var offset = 0;
-        var limit = 50;
-        var next = true;
-        var tracks = [];
-        var spotifyApi = new spotifyWebApi(credentials);
-        spotifyApi.setAccessToken(req.body.token);
-        do {
-            const myTracks = await spotifyApi.getMySavedTracks({
-                limit: limit,
-                offset: offset,
-            });
-            const trackIds = myTracks.body.items.map((track) => track.track.id);
-            const audioFeatures = await spotifyApi.getAudioFeaturesForTracks(trackIds);
-            const audioFeaturesFiltered = audioFeatures.body.audio_features.map(({ key, loudness, mode, tempo, type, id, uri, track_href, analysis_url, duration_ms, time_signature, ...item }) => item);
-            tracks = [...tracks, ...audioFeaturesFiltered];
-            next = myTracks.body.next;
-            offset = offset + limit;
-        } while (next);
-        const success = myCache.set("tracks", tracks);
-        res.status(200).json({ success });
-    }
-    catch (error) {
-        res.status(500).json({ error: error });
-    }
-}
-
 export const checkSimilarity = async (req, res) => {
     try {
-        const tracks = myCache.get("tracks");
-        console.log(tracks)
+        const accessToken = req.headers.authorization;
+        let tracks = myCache.get("tracks");
         if (tracks == undefined) {
-            res.status(500).json({ results: "Something went wrong!" });
-            return;
+            await getAllTracks(accessToken);
+            tracks = myCache.get("tracks");
         }
         var spotifyApi = new spotifyWebApi(credentials);
-        spotifyApi.setAccessToken(req.body.token);
+        spotifyApi.setAccessToken(accessToken);
         const audioFeatures = await spotifyApi.getAudioFeaturesForTrack(req.body.selectedTrack)
         var r = 0;
         var { danceability, energy, speechiness, acousticness, instrumentalness, liveness, valence } = audioFeatures.body;
@@ -166,6 +186,6 @@ export const checkSimilarity = async (req, res) => {
         });
         res.status(200).json({ results: Math.round(r / (tracks.length !== 0 ? tracks.length : 1)) });
     } catch (error) {
-        res.status(500).json({ error: error });
+        res.status(500).json({ error });
     }
 }

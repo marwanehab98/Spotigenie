@@ -25,7 +25,7 @@ export default function useAuth(code) {
                 navigate("/")
             })
             .catch((error) => {
-                console.log(error.response)
+                console.log(error)
             })
     }
 
