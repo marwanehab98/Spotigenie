@@ -1,16 +1,11 @@
 import { Button, Card, Col, Loading, Progress, Row, Spacer, Text } from "@nextui-org/react";
-import axios from "axios";
 import { useState } from "react";
-import { useDispatch } from "react-redux";
-import { setAccessToken } from "../state";
-import { refreshAccessToken } from "../utils/refreshToken";
 import useAxios from "../utils/useAxios";
 import { HeartIcon } from "./logos/HeartIcon";
 
 
 export const TrackCard = ({
     accessToken,
-    refreshToken,
     track,
     topTrack = false,
     isPressable = false,
@@ -18,8 +13,6 @@ export const TrackCard = ({
     isSelected,
     isPlaying,
     playbackState }) => {
-
-    const dispatch = useDispatch();
 
     let api = useAxios()
 

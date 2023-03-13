@@ -1,25 +1,20 @@
 import { Text, Grid, Spacer, Collapse, Input, Progress } from "@nextui-org/react"
-import axios from "axios";
 import { useEffect, useRef, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { Box } from "./Box.js"
 import { TrackCard } from "./TrackCard.js";
 import { SearchButton } from "./SearchButton.js";
 import { Search } from "./logos/SearchIcon.js";
-import { refreshAccessToken } from "../utils/refreshToken.js";
-import { setAccessToken } from "../state/index.js";
 import useAxios from "../utils/useAxios.js";
 
 const audio = new Audio();
 audio.preload = "metadata";
 
 export const Content = () => {
-	const dispatch = useDispatch();
 
 	let api = useAxios()
 
 	const accessToken = useSelector((state) => state.accessToken);
-	const refreshToken = useSelector((state) => state.refreshToken);
 	const tracks = useSelector((state) => state.tracks);
 	const recommendations = useSelector((state) => state.recommendations);
 	const user = useSelector((state) => state.user);
@@ -80,8 +75,6 @@ export const Content = () => {
 
 	useEffect(() => {
 		if (!selectedTrack) return;
-
-		// setSimilarity(null);
 
 		const controller = new AbortController();
 
@@ -192,7 +185,6 @@ export const Content = () => {
 								<Grid key={track.id} xs={12} sm={6} md={3}>
 									<TrackCard
 										accessToken={accessToken}
-										refreshToken={refreshToken}
 										track={track}
 										isHoverable={true}
 										isPressable={true}
@@ -215,7 +207,6 @@ export const Content = () => {
 						}}>
 							<Progress
 								size="sm"
-								// squared
 								indeterminated={!similarity}
 								value={similarity || 50}
 								max={100}
@@ -228,7 +219,7 @@ export const Content = () => {
 									similarity === 100 ?
 										`The song ${selectedTrack.name} by ${selectedTrack.artists[0].name} is already in your library.` :
 										`The song ${selectedTrack.name} by ${selectedTrack.artists[0].name} is ${similarity}% similar to your music.`
-								}</Text> : <Text h3>Calculating similarity</Text>
+								}</Text> : <Text h3>Calculating similarity, first time might take a little longer depending on your connection.</Text>
 							}
 						</Box>
 					)}
@@ -240,7 +231,6 @@ export const Content = () => {
 								<Grid key={track.id} xs={12} sm={6} md={3}>
 									<TrackCard
 										accessToken={accessToken}
-										refreshToken={refreshToken}
 										track={track}
 										isPlaying={handlePlayback}
 										playbackState={playbackState} />
@@ -256,7 +246,6 @@ export const Content = () => {
 								<Grid key={track.id} xs={12} sm={6} md={3}>
 									<TrackCard
 										accessToken={accessToken}
-										refreshToken={refreshToken}
 										track={track}
 										topTrack={true}
 										isPlaying={handlePlayback}

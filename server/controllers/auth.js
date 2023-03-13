@@ -32,6 +32,7 @@ export const logout = (_, res) => {
         myCache.flushAll()
         res.status(200).json({ response: "logged out" });
     } catch (error) {
+        console.log(error)
         res.status(500).json({ error: error });
     }
 }

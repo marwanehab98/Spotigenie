@@ -21,6 +21,7 @@ const getAllTracks = async (accessToken) => {
         var spotifyApi = new spotifyWebApi(credentials);
         spotifyApi.setAccessToken(accessToken);
         do {
+            console.log(next);
             const myTracks = await spotifyApi.getMySavedTracks({
                 limit: limit,
                 offset: offset,
