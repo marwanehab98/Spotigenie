@@ -7,6 +7,7 @@ const initialState = {
     refreshToken: null,
     tracks: [],
     recommendations: [],
+    darktheme: false
 };
 
 export const authSlice = createSlice({
@@ -38,6 +39,9 @@ export const authSlice = createSlice({
         setRecommendations: (state, action) => {
             state.recommendations = action.payload.recommendations;
         },
+        setTheme: (state) => {
+            state.darktheme = !state.darktheme;
+        }
     }
 })
 
@@ -48,5 +52,6 @@ export const {
     setExpiresIn,
     setTracks,
     setRecommendations,
+    setTheme,
 } = authSlice.actions;
 export default authSlice.reducer;

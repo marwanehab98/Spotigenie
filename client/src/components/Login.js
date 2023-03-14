@@ -19,7 +19,7 @@ export const Login = () => {
                         }}
                         h1>Explore new music, find your top songs, and get predictions.</Text>
                     <Spacer y={1} />
-                    <Text h3 color="#d1d1d1" >
+                    <Text h3>
                         Once you log in you will be able to see your favourite tracks.
                         Then we will start analyzing the songs you love to give you suggestions and predictions.
                     </Text>
