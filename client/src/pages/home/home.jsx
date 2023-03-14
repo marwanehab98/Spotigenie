@@ -153,8 +153,8 @@ const Dashboard = () => {
                     </Navbar.Item> */}
                     <Navbar.Item hideIn={"xs"}>
                         {accessToken ?
-                            <Button color="success" auto onPress={handleLogout}> Logout </Button> :
-                            <Button color="success" auto onPress={handleLogin}> Login </Button>
+                            <Button flat color="success" auto onPress={handleLogout}> Logout </Button> :
+                            <Button flat color="success" auto onPress={handleLogin}> Login </Button>
                         }
                     </Navbar.Item>
                     <Navbar.Collapse>

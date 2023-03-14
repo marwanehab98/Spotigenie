@@ -6,7 +6,7 @@ import { createTheme, NextUIProvider } from '@nextui-org/react';
 
 const darkTheme = createTheme({ type: 'dark' });
 
-// const lightTheme = createTheme({ type: 'light' });
+const lightTheme = createTheme({ type: 'light' });
 
 function App() {
   // const darktheme = useSelector((state) => state.darktheme);

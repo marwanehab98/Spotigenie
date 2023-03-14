@@ -155,7 +155,7 @@ export const Content = () => {
 				}}
 				h2>{`Hello, ${user?.display_name}! This is your SPOTIGENIE dashboard.`}</Text>
 			<Collapse.Group shadow bordered>
-				<Collapse title="SEARCH" subtitle="Search for a song and we'll tell you how much you'll like it.">
+				<Collapse title="SEARCH" subtitle="Search for a song and we'll predict you how much you'll like it.">
 					<Box css={{
 						p: "10px",
 						display: "flex",

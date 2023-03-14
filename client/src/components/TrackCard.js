@@ -70,7 +70,8 @@ export const TrackCard = ({
     const name = track.name;
     const artistNames = appendArtists(track.artists);
     const album = track.album.name;
-    const image = track.artistImage;
+    // const image = track.artistImage;
+    const image = track.album.images[0].url;
 
 
     return (

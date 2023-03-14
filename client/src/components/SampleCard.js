@@ -30,7 +30,14 @@ export const SampleCard = () => {
         <Card
             isPressable
             variant="shadow"
-            css={{ borderColor: "$neutralBorder", bw: "2px", borderStyle: "solid", w: "70%", aspectRatio: "1 / 1" }}>
+            css={{
+                borderColor: "$neutralBorder",
+                bw: "2px",
+                w: "90%",
+                borderStyle: "solid",
+                aspectRatio: "1 / 1",
+                "@smMax": {w: "70vw", aspectRatio: "4 / 3" }
+            }}>
             <Card.Header css={{ justifyContent: "flex-end", position: "absolute", zIndex: 1, top: 5 }}>
                 <Button.Group
                     auto

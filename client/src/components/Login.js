@@ -7,7 +7,10 @@ export const Login = () => {
     return (
         <Grid.Container>
             <Grid xs={12} sm={12} md={6}>
-                <Box css={{ margin: "20px", px: "$12", mt: "$8", "@xsMax": { px: "$10" } }}>
+                <Box css={{
+                    p: "$12",
+                    "@xsMax": { pb: "$1" }
+                }}>
                     <Text
                         css={{
                             textGradient: "45deg, $blue600 -20%, $pink600 50%",
@@ -25,11 +28,12 @@ export const Login = () => {
                     </Text>
                 </Box>
             </Grid>
-            <Grid xs={12} sm={12} md={6} css={{justifyContent: "center"}}>
+            <Grid xs={12} sm={12} md={6} css={{ justifyContent: "center" }}>
                 <Box css={{
+                    p: "$12",
                     display: "flex",
                     justifyContent: "center",
-                    "@smMax": { pb: "$10" },
+                    "@smMax": { pb: "$10", pt: "$1" },
                     transform: "scale(0.8, 0.8) skewX(-20deg)",
                     transition: "all 300ms",
                     transitionTimingFunction: "ease-in-out",
