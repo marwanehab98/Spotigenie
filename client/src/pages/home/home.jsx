@@ -1,9 +1,16 @@
 import axios from "axios";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { setLogout, setRecommendations, setTheme, setTracks } from "../../state";
+import {
+    setLogout, setRecommendations,
+    // setTheme,
+    setTracks
+} from "../../state";
 import useAuth from "../../utils/useAuth";
-import { Navbar, Button, Text, Spacer, Switch } from "@nextui-org/react";
+import {
+    Navbar, Button, Text, Spacer,
+    // Switch
+} from "@nextui-org/react";
 import { Layout } from "../../components/Layout";
 import { Logo } from "../../components/logos/Logo";
 import { loginUrl } from "../../utils/Spotify";
@@ -12,8 +19,8 @@ import { Login } from "../../components/Login";
 import { Linkedin } from "../../components/logos/Linkedin";
 import { Github } from "../../components/logos/Github";
 import useAxios from '../../utils/useAxios.js'
-import { SunIcon } from "../../components/logos/SunIcon";
-import { MoonIcon } from "../../components/logos/MoonIcon";
+// import { SunIcon } from "../../components/logos/SunIcon";
+// import { MoonIcon } from "../../components/logos/MoonIcon";
 
 const code = new URLSearchParams(window.location.search).get('code')
 
@@ -24,7 +31,7 @@ const Dashboard = () => {
 
     const accessToken = useSelector((state) => state.accessToken);
     const tracks = useSelector((state) => state.tracks);
-    const darktheme = useSelector((state) => state.darktheme);
+    // const darktheme = useSelector((state) => state.darktheme);
 
     let api = useAxios()
 
@@ -78,9 +85,7 @@ const Dashboard = () => {
             })
     }
 
-    const switchTheme = () => {
-        dispatch(setTheme());
-    }
+    // const switchTheme = () => dispatch(setTheme());
 
     useEffect(() => {
         const controller = new AbortController();
@@ -137,7 +142,7 @@ const Dashboard = () => {
                                 auto />
                         </>
                     </Navbar.Item>
-                    <Navbar.Item hideIn={"xs"}>
+                    {/* <Navbar.Item hideIn={"xs"}>
                         <Switch
                             color="success"
                             initialChecked={!darktheme}
@@ -145,7 +150,7 @@ const Dashboard = () => {
                             iconOff={<MoonIcon filled />}
                             onChange={switchTheme}
                         />
-                    </Navbar.Item>
+                    </Navbar.Item> */}
                     <Navbar.Item hideIn={"xs"}>
                         {accessToken ?
                             <Button color="success" auto onPress={handleLogout}> Logout </Button> :
@@ -172,12 +177,12 @@ const Dashboard = () => {
                                 href="https://github.com/marwanehab98"
                                 auto >Github</Button>
                         </Navbar.CollapseItem>
-                        <Navbar.CollapseItem>
+                        {/* <Navbar.CollapseItem>
                             <Button
                                 onPress={switchTheme}
                                 light
                                 auto >Switch Theme</Button>
-                        </Navbar.CollapseItem>
+                        </Navbar.CollapseItem> */}
                         <Navbar.CollapseItem>
                             {accessToken ?
                                 <Button light color="default" auto onPress={handleLogout}> Logout </Button> :

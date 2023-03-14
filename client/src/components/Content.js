@@ -15,7 +15,7 @@ export const Content = () => {
 	let api = useAxios()
 
 	const accessToken = useSelector((state) => state.accessToken);
-	const tracks = useSelector((state) => state.tracks);
+	// const tracks = useSelector((state) => state.tracks);
 	const recommendations = useSelector((state) => state.recommendations);
 	const user = useSelector((state) => state.user);
 
@@ -148,7 +148,7 @@ export const Content = () => {
 	}
 
 	return (
-		<Box css={{ px: "$12", mt: "$8", "@xsMax": { px: "$10" } }}>
+		<Box css={{ pb: "$12", px: "$12", mt: "$8", "@xsMax": { px: "$10" } }}>
 			<Text
 				css={{
 					textGradient: "45deg, $blue600 -20%, $pink600 50%",
@@ -239,7 +239,7 @@ export const Content = () => {
 						})}
 					</Grid.Container>
 				</Collapse>
-				<Collapse title="TOP TRACKS" subtitle="See the songs you listen to the most at the moment.">
+				{/* <Collapse title="TOP TRACKS" subtitle="See the songs you listen to the most at the moment.">
 					<Grid.Container gap={4} justify="flex-start">
 						{tracks?.map((track) => {
 							return (
@@ -254,7 +254,7 @@ export const Content = () => {
 							);
 						})}
 					</Grid.Container>
-				</Collapse>
+				</Collapse> */}
 			</Collapse.Group>
 		</Box>
 	)
