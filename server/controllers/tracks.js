@@ -12,8 +12,19 @@ const credentials = {
     redirectUri: process.env.REDIRECT_URI,
 };
 
-const getAllTracks = async (accessToken) => {
+let fetching = false;
+let fetchQueue = [];
+
+export const getAllTracks = async (accessToken) => {
     try {
+        if (fetching) {
+            return new Promise((resolve) => {
+                fetchQueue.push(resolve);
+            });
+        }
+
+        fetching = true;
+
         var offset = 0;
         var limit = 50;
         var next = true;
@@ -21,7 +32,6 @@ const getAllTracks = async (accessToken) => {
         var spotifyApi = new spotifyWebApi(credentials);
         spotifyApi.setAccessToken(accessToken);
         do {
-            console.log(next);
             const myTracks = await spotifyApi.getMySavedTracks({
                 limit: limit,
                 offset: offset,
@@ -52,7 +62,16 @@ const getAllTracks = async (accessToken) => {
             next = myTracks.body.next;
             offset = offset + limit;
         } while (next);
+
+        fetching = false;
         myCache.set("tracks", tracks);
+
+        while (fetchQueue.length > 0) {
+            const resolve = fetchQueue.shift();
+            resolve();
+        }
+
+        return Promise.resolve();
     }
     catch (error) {
         throw error;
@@ -166,8 +185,8 @@ export const checkSimilarity = async (req, res) => {
         let tracks = myCache.get("tracks");
         if (tracks == undefined) {
             await getAllTracks(accessToken);
-            tracks = myCache.get("tracks");
         }
+        tracks = myCache.get("tracks");
         var spotifyApi = new spotifyWebApi(credentials);
         spotifyApi.setAccessToken(accessToken);
         const audioFeatures = await spotifyApi.getAudioFeaturesForTrack(req.body.selectedTrack)

@@ -28,7 +28,7 @@ const Dashboard = () => {
     const getTopTracks = async (controller) => {
         if (!accessToken) return;
         try {
-            let response = await api.post('/tracks/toptracks',
+            let response = await api.get('/tracks/toptracks',
                 { signal: controller.signal });
             if (response.status === 200) {
                 dispatch(

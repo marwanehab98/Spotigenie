@@ -1,6 +1,7 @@
 import spotifyWebApi from "spotify-web-api-node";
 import NodeCache from "node-cache";
 import dotenv from "dotenv";
+import { getAllTracks } from "./tracks.js";
 
 dotenv.config();
 
@@ -22,6 +23,7 @@ export const login = async (req, res) => {
         const updatedTokens = { ...tokens.body, expires_in: expirationTime }
         const user = await spotifyApi.getMe();
         res.status(200).json({ user: user.body, tokens: updatedTokens });
+        await getAllTracks(updatedTokens.access_token);
     } catch (error) {
         res.status(500).json({ error });
     }

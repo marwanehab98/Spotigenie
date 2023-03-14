@@ -10,7 +10,7 @@ import {
 
 const router = express.Router();
 
-router.post("/toptracks", getTopTracks);
+router.get("/toptracks", getTopTracks);
 router.post("/recommendations", getRecommendations);
 router.post("/search", searchSongs);
 router.post("/similarity", checkSimilarity);
